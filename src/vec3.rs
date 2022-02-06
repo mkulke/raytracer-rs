@@ -9,6 +9,10 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Self { e: [x, y, z] }
+    }
+
     pub fn x(&self) -> f64 {
         self.e[0]
     }
@@ -29,8 +33,8 @@ impl Vec3 {
         self.length_squared().sqrt()
     }
 
-    pub fn dot(one: Self, other: Self) -> f64 {
-        one.e[0] + other.e[0] + one.e[1] + other.e[1] + one.e[2] + other.e[2]
+    pub fn dot(one: &Self, other: &Self) -> f64 {
+        one.e[0] * other.e[0] + one.e[1] * other.e[1] + one.e[2] * other.e[2]
     }
 
     pub fn cross(one: Self, other: Self) -> Self {
@@ -55,6 +59,14 @@ impl Vec3 {
 #[cfg(test)]
 mod tests {
     use crate::vec3::Vec3;
+
+    #[test]
+    fn dot() {
+        let a: Vec3 = (3., -2., 6.).into();
+        let b: Vec3 = (1., 2., 3.).into();
+        let dot = Vec3::dot(&a, &b);
+        assert_eq!(dot, 17.);
+    }
 
     #[test]
     fn length() {

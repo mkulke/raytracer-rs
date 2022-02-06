@@ -7,11 +7,27 @@ use std::io::Write;
 use vec3::Vec3;
 
 mod color;
+mod hit;
 mod point3;
 mod ray;
+mod sphere;
 mod vec3;
 
+fn sphere_hit(center: &Point3, radius: f64, ray: &Ray) -> Option<f64> {
+    let oc = &ray.origin().0 - &center.0;
+    let a = ray.direction().length_squared();
+    let half_b = Vec3::dot(&oc, ray.direction());
+    let c = oc.length_squared() - radius * radius;
+    let discriminant = half_b * half_b - a * c;
+    (discriminant > 0.).then(|| (-half_b - discriminant.sqrt()) / a)
+}
+
 fn ray_color(ray: &Ray) -> Color {
+    let center = Point3::new(0., 0., -1.);
+    if let Some(t) = sphere_hit(&center, 0.5, &ray) {
+        let n = (ray.at(t).0 - &Vec3::new(0., 0., -1.)).unit_vector();
+        return Color::new(n.x() + 1., n.y() + 1., n.z() + 1.) * 0.5;
+    }
     let unit_direction = ray.direction().unit_vector();
     let t = 0.5 * (unit_direction.y() + 1.0);
     let color_a = Color::new(1.0, 1.0, 1.0) * (1.0 - t);
