@@ -3,15 +3,12 @@ use std::error::Error;
 use std::io::Write;
 use std::ops;
 
+#[derive(Debug, Default)]
 pub struct Vec3 {
     e: [f64; 3],
 }
 
 impl Vec3 {
-    pub fn new() -> Self {
-        Self { e: [0., 0., 0.] }
-    }
-
     pub fn x(&self) -> f64 {
         self.e[0]
     }
@@ -55,6 +52,26 @@ impl Vec3 {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use crate::vec3::Vec3;
+
+    #[test]
+    fn length() {
+        let a: Vec3 = (3., -2., 6.).into();
+        assert_eq!(a.length(), 7.);
+    }
+
+    #[test]
+    fn unit_vector() {
+        let a: Vec3 = (3., -2., 6.).into();
+        let u = a.unit_vector();
+        assert_eq!(u.e[0], 3. / 7.,);
+        assert_eq!(u.e[1], -2. / 7.,);
+        assert_eq!(u.e[2], 6. / 7.,);
+    }
+}
+
 impl From<(f64, f64, f64)> for Vec3 {
     fn from(e: (f64, f64, f64)) -> Self {
         Self { e: [e.0, e.1, e.2] }
@@ -69,8 +86,8 @@ impl ops::AddAssign<Vec3> for Vec3 {
     }
 }
 
-impl ops::Add<&Vec3> for Vec3 {
-    type Output = Self;
+impl ops::Add<&Vec3> for &Vec3 {
+    type Output = Vec3;
 
     fn add(self, other: &Vec3) -> Self::Output {
         (
@@ -82,8 +99,16 @@ impl ops::Add<&Vec3> for Vec3 {
     }
 }
 
-impl ops::Sub<&Vec3> for Vec3 {
-    type Output = Self;
+impl ops::Add<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn add(self, other: Vec3) -> Self::Output {
+        &self + &other
+    }
+}
+
+impl ops::Sub<&Vec3> for &Vec3 {
+    type Output = Vec3;
 
     fn sub(self, other: &Vec3) -> Self::Output {
         (
@@ -95,11 +120,19 @@ impl ops::Sub<&Vec3> for Vec3 {
     }
 }
 
-impl ops::Mul<f64> for &Vec3 {
+impl ops::Sub<Vec3> for &Vec3 {
     type Output = Vec3;
 
-    fn mul(self, t: f64) -> Self::Output {
-        (self.e[0] * t, self.e[1] * t, self.e[2] * t).into()
+    fn sub(self, other: Vec3) -> Self::Output {
+        self - &other
+    }
+}
+
+impl ops::Sub<&Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, other: &Vec3) -> Self::Output {
+        &self - other
     }
 }
 
@@ -111,16 +144,40 @@ impl ops::Div<f64> for &Vec3 {
     }
 }
 
-impl ops::Mul<Vec3> for Vec3 {
-    type Output = Self;
+impl ops::Div<f64> for Vec3 {
+    type Output = Vec3;
 
-    fn mul(self, other: Vec3) -> Self::Output {
+    fn div(self, t: f64) -> Self::Output {
+        &self / t
+    }
+}
+
+impl ops::Mul<&Vec3> for &Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, other: &Vec3) -> Self::Output {
         (
             self.e[0] * other.e[0],
             self.e[1] * other.e[1],
             self.e[2] * other.e[2],
         )
             .into()
+    }
+}
+
+impl ops::Mul<f64> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, t: f64) -> Self::Output {
+        &self * t
+    }
+}
+
+impl ops::Mul<f64> for &Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, t: f64) -> Self::Output {
+        (self.e[0] * t, self.e[1] * t, self.e[2] * t).into()
     }
 }
 
