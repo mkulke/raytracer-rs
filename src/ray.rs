@@ -12,7 +12,7 @@ impl<'a> Ray<'a> {
     }
 
     pub fn at(&self, t: f64) -> Point3 {
-        Point3(&self.origin.0 + &(&self.direction * t))
+        (self.origin.as_vec3() + &(&self.direction * t)).into()
     }
 
     pub fn origin(&self) -> &Point3 {

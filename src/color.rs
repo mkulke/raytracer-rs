@@ -1,7 +1,7 @@
 use super::vec3::Vec3;
+use std::convert::From;
 use std::error::Error;
 use std::io::Write;
-use std::ops;
 
 #[derive(Debug)]
 pub struct Color(pub Vec3);
@@ -21,26 +21,8 @@ impl Color {
     }
 }
 
-impl ops::Mul<f64> for &Color {
-    type Output = Color;
-
-    fn mul(self, t: f64) -> Self::Output {
-        Color(&self.0 * t)
-    }
-}
-
-impl ops::Mul<f64> for Color {
-    type Output = Color;
-
-    fn mul(self, t: f64) -> Self::Output {
-        &self * t
-    }
-}
-
-impl ops::Add<Color> for Color {
-    type Output = Color;
-
-    fn add(self, other: Color) -> Self::Output {
-        Color(self.0 + other.0)
+impl From<Vec3> for Color {
+    fn from(vec3: Vec3) -> Self {
+        Self(vec3)
     }
 }

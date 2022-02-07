@@ -1,6 +1,7 @@
-use color::Color;
+use hit::Hittable;
 use point3::Point3;
 use ray::Ray;
+use sphere::Sphere;
 use std::error::Error;
 use std::io;
 use std::io::Write;
@@ -13,30 +14,6 @@ mod ray;
 mod sphere;
 mod vec3;
 
-fn sphere_hit(center: &Point3, radius: f64, ray: &Ray) -> Option<f64> {
-    let oc = &ray.origin().0 - &center.0;
-    let a = ray.direction().length_squared();
-    let half_b = Vec3::dot(&oc, ray.direction());
-    let c = oc.length_squared() - radius * radius;
-    let discriminant = half_b * half_b - a * c;
-    (discriminant > 0.).then(|| (-half_b - discriminant.sqrt()) / a)
-}
-
-fn ray_color(ray: &Ray) -> Color {
-    let center = Point3::new(0., 0., -1.);
-    if let Some(t) = sphere_hit(&center, 0.5, &ray) {
-        let n = (ray.at(t).0 - &Vec3::new(0., 0., -1.)).unit_vector();
-        return Color::new(n.x() + 1., n.y() + 1., n.z() + 1.) * 0.5;
-    }
-    let unit_direction = ray.direction().unit_vector();
-    let t = 0.5 * (unit_direction.y() + 1.0);
-    let color_a = Color::new(1.0, 1.0, 1.0) * (1.0 - t);
-    // dbg!(&color_a);
-    let color_b = Color::new(0.5, 0.7, 1.0) * t;
-    // dbg!(&color_b);
-    color_a + color_b
-}
-
 fn main() -> Result<(), Box<dyn Error>> {
     let stdout = io::stdout();
     let stderr = io::stderr();
@@ -45,6 +22,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as u16;
+
+    // World
+    let sphere_small = Sphere::new(Point3::new(0., 0., -1.), 0.5);
+    let sphere_big = Sphere::new(Point3::new(0., -100.5, -1.), 100.0);
+    let world: Vec<Box<dyn Hittable>> = vec![Box::new(sphere_small), Box::new(sphere_big)];
 
     // Camera
     let viewport_height = 2.0;
@@ -57,7 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let horizontal_split = &horizontal / 2.;
     let vertical_split = &vertical / 2.;
     let focal_vec3: Vec3 = (0., 0., focal_length).into();
-    let lower_left_corner = &origin.0 - &horizontal_split - &vertical_split - &focal_vec3;
+    let lower_left_corner = origin.as_vec3() - &horizontal_split - &vertical_split - &focal_vec3;
 
     writeln!(&stdout, "P3")?;
     writeln!(&stdout, "{} {}", image_width, image_height)?;
@@ -68,9 +50,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         for i in 0..image_width {
             let u = i as f64 / (image_width - 1) as f64;
             let v = j as f64 / (image_height - 1) as f64;
-            let destination = &lower_left_corner + &(&horizontal * u) + &vertical * v - &origin.0;
+            let destination =
+                &lower_left_corner + &(&horizontal * u) + &vertical * v - origin.as_vec3();
             let ray = Ray::new(&origin, destination);
-            let pixel_color = ray_color(&ray);
+            let pixel_color = world.ray_color(&ray);
             // dbg!(&pixel_color);
             pixel_color.write(&stdout)?;
         }
