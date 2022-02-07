@@ -1,12 +1,12 @@
+use camera::Camera;
 use hit::Hittable;
 use point3::Point3;
-use ray::Ray;
 use sphere::Sphere;
 use std::error::Error;
 use std::io;
 use std::io::Write;
-use vec3::Vec3;
 
+mod camera;
 mod color;
 mod hit;
 mod point3;
@@ -29,17 +29,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let world: Vec<Box<dyn Hittable>> = vec![Box::new(sphere_small), Box::new(sphere_big)];
 
     // Camera
-    let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
-
-    let origin = Point3::new(0., 0., 0.);
-    let horizontal: Vec3 = (viewport_width, 0., 0.).into();
-    let vertical: Vec3 = (0., viewport_height, 0.).into();
-    let horizontal_split = &horizontal / 2.;
-    let vertical_split = &vertical / 2.;
-    let focal_vec3: Vec3 = (0., 0., focal_length).into();
-    let lower_left_corner = origin.as_vec3() - &horizontal_split - &vertical_split - &focal_vec3;
+    let camera = Camera::new();
 
     writeln!(&stdout, "P3")?;
     writeln!(&stdout, "{} {}", image_width, image_height)?;
@@ -50,9 +40,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         for i in 0..image_width {
             let u = i as f64 / (image_width - 1) as f64;
             let v = j as f64 / (image_height - 1) as f64;
-            let destination =
-                &lower_left_corner + &(&horizontal * u) + &vertical * v - origin.as_vec3();
-            let ray = Ray::new(&origin, destination);
+            let ray = camera.get_ray(u, v);
             let pixel_color = world.ray_color(&ray);
             // dbg!(&pixel_color);
             pixel_color.write(&stdout)?;
