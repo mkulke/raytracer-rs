@@ -98,6 +98,14 @@ impl ops::AddAssign<Vec3> for Vec3 {
     }
 }
 
+impl ops::AddAssign<&Vec3> for Vec3 {
+    fn add_assign(&mut self, other: &Vec3) {
+        self.e[0] += other.e[0];
+        self.e[1] += other.e[1];
+        self.e[2] += other.e[2];
+    }
+}
+
 impl ops::Add<&Vec3> for &Vec3 {
     type Output = Vec3;
 

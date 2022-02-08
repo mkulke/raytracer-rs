@@ -1,6 +1,8 @@
 use camera::Camera;
+use color::Color;
 use hit::Hittable;
 use point3::Point3;
+use rnd::pseudo_rnd;
 use sphere::Sphere;
 use std::error::Error;
 use std::io;
@@ -11,6 +13,7 @@ mod color;
 mod hit;
 mod point3;
 mod ray;
+mod rnd;
 mod sphere;
 mod vec3;
 
@@ -35,15 +38,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     writeln!(&stdout, "{} {}", image_width, image_height)?;
     writeln!(&stdout, "255")?;
 
+    // Antialiasing
+    let samples = 100;
+
     for j in (0..image_height).rev() {
-        write!(&stderr, "\rScanlines remaining: {}", j)?;
+        write!(&stderr, "\rScanlines remaining: {:0>3}", j)?;
         for i in 0..image_width {
-            let u = i as f64 / (image_width - 1) as f64;
-            let v = j as f64 / (image_height - 1) as f64;
-            let ray = camera.get_ray(u, v);
-            let pixel_color = world.ray_color(&ray);
-            // dbg!(&pixel_color);
-            pixel_color.write(&stdout)?;
+            let mut pixel_color = Color::new(0., 0., 0.);
+            for _ in 0..samples {
+                let u = (i as f64 + pseudo_rnd()) / (image_width - 1) as f64;
+                let v = (j as f64 + pseudo_rnd()) / (image_height - 1) as f64;
+                let ray = camera.get_ray(u, v);
+                pixel_color += world.ray_color(&ray);
+                // dbg!(&pixel_color);
+            }
+            pixel_color.write_sampled(&stdout, samples)?;
         }
     }
 
