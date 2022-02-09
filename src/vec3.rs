@@ -1,3 +1,4 @@
+use super::rnd::rnd_range;
 use std::convert::From;
 use std::error::Error;
 use std::io::Write;
@@ -11,6 +12,14 @@ pub struct Vec3 {
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { e: [x, y, z] }
+    }
+
+    fn random(min: f64, max: f64) -> Self {
+        Self::new(
+            rnd_range(min, max),
+            rnd_range(min, max),
+            rnd_range(min, max),
+        )
     }
 
     pub fn x(&self) -> f64 {
@@ -53,6 +62,19 @@ impl Vec3 {
     pub fn write(&self, mut writer: impl Write) -> Result<(), Box<dyn Error>> {
         write!(writer, "{} {} {}", self.e[0], self.e[1], self.e[2])?;
         Ok(())
+    }
+
+    fn random_in_unit_sphere() -> Self {
+        loop {
+            let p = Self::random(-1., 1.);
+            if p.length_squared() < 1. {
+                return p;
+            }
+        }
+    }
+
+    pub fn random_unit_vector() -> Self {
+        Self::random_in_unit_sphere().unit_vector()
     }
 }
 

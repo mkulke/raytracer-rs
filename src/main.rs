@@ -2,7 +2,7 @@ use camera::Camera;
 use color::Color;
 use hit::Hittable;
 use point3::Point3;
-use rnd::pseudo_rnd;
+use rnd::rnd;
 use sphere::Sphere;
 use std::error::Error;
 use std::io;
@@ -39,20 +39,22 @@ fn main() -> Result<(), Box<dyn Error>> {
     writeln!(&stdout, "255")?;
 
     // Antialiasing
-    let samples = 100;
+    let aa_samples = 100;
+
+    let max_depth = 50;
 
     for j in (0..image_height).rev() {
         write!(&stderr, "\rScanlines remaining: {:0>3}", j)?;
         for i in 0..image_width {
             let mut pixel_color = Color::new(0., 0., 0.);
-            for _ in 0..samples {
-                let u = (i as f64 + pseudo_rnd()) / (image_width - 1) as f64;
-                let v = (j as f64 + pseudo_rnd()) / (image_height - 1) as f64;
+            for _ in 0..aa_samples {
+                let u = (i as f64 + rnd()) / (image_width - 1) as f64;
+                let v = (j as f64 + rnd()) / (image_height - 1) as f64;
                 let ray = camera.get_ray(u, v);
-                pixel_color += world.ray_color(&ray);
+                pixel_color += world.ray_color(&ray, max_depth);
                 // dbg!(&pixel_color);
             }
-            pixel_color.write_sampled(&stdout, samples)?;
+            pixel_color.write_sampled(&stdout, aa_samples)?;
         }
     }
 

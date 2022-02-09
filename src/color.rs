@@ -26,9 +26,9 @@ impl Color {
     ) -> Result<(), Box<dyn Error>> {
         let scale = 1. / samples as f64;
 
-        let r = self.as_vec3().x() * scale;
-        let g = self.as_vec3().y() * scale;
-        let b = self.as_vec3().z() * scale;
+        let r = (self.as_vec3().x() * scale).sqrt();
+        let g = (self.as_vec3().y() * scale).sqrt();
+        let b = (self.as_vec3().z() * scale).sqrt();
 
         let clamped_r = (256. * clamp(r, 0., 0.999)) as u8;
         let clamped_g = (256. * clamp(g, 0., 0.999)) as u8;
