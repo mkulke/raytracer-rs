@@ -1,6 +1,6 @@
 # raytracer-rs
 
-This is an explorative attempt to implement [Raytracing in one Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) in idiomatic Rust, using only std ~without any further dependencies~ and `rand`.
+This is an explorative attempt to implement [Raytracing in one Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) in idiomatic Rust, using only std without any further dependencies.
 
 ![Sample](https://raw.githubusercontent.com/mkulke/raytracer-rs/main/my.jpg)
 
